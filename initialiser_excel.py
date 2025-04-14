@@ -6,11 +6,10 @@ from datetime import datetime
 DOSSIER_DATA = "data"
 
 STRUCTURES = {
-    "factures.xlsx": ["ID", "Date", "Client", "Description", "Montant (€)", "Type", "Statut"],
-    "depenses.xlsx": ["ID", "Date", "Nom", "Description", "Montant (€)", "Catégorie", "Facture jointe"],
-    "historique.xlsx": ["ID", "Date", "Nom", "Description", "Montant (€)", "Type"]
+    "factures.xlsx": ["ID", "Date", "Client", "Description", "Montant (€)", "Type", "Statut","Email"],
+    "depenses.xlsx": ["ID", "Date", "Nom", "Description", "Montant (€)", "Catégorie", "Email"],
+    "historique.xlsx": ["ID", "Date", "Nom", "Description", "Montant (€)", "Type","Email"]
 }
-
 
 def sauvegarder_fichier(fichier):
     now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -20,9 +19,13 @@ def sauvegarder_fichier(fichier):
     os.makedirs(dossier_sauvegarde, exist_ok=True)
     chemin_original = os.path.join(DOSSIER_DATA, fichier)
     chemin_sauvegarde = os.path.join(dossier_sauvegarde, nom_sauvegarde)
+
+    if not os.path.exists(chemin_original):
+        print(f"Erreur : Le fichier {fichier} n'existe pas. Sauvegarde impossible.")
+        return
+
     shutil.copy2(chemin_original, chemin_sauvegarde)
     print(f"   Sauvegarde de {fichier} effectuée dans 'sauvegardes/{nom_sauvegarde}'")
-
 
 def creer_feuilles_par_mois(annee):
     mois = ["Septembre", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"]
@@ -70,6 +73,7 @@ def creer_feuilles_par_mois(annee):
                         feuille_mois = f"{m} {annee_mois}"
                         print(f"   Création de la feuille : {feuille_mois}")
                         pd.DataFrame(columns=colonnes).to_excel(writer, sheet_name=feuille_mois, index=False)
+
                 print(f"   Fichier {fichier} enregistré avec succès.\n")
             except Exception as e:
                 print(f"   Erreur lors de la création du fichier {fichier} : {e}\n")
@@ -78,7 +82,6 @@ def creer_feuilles_par_mois(annee):
 
     print("--- Opération terminée ---\n")
 
-
 def main():
     print("=== Génération des feuilles mensuelles ===")
     try:
@@ -86,7 +89,6 @@ def main():
         creer_feuilles_par_mois(annee)
     except ValueError:
         print("Entrée invalide. Veuillez entrer une année au format numérique.")
-
 
 if __name__ == "__main__":
     main()
