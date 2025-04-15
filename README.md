@@ -132,3 +132,27 @@ L'interface graphique est en cours de développement avec le module `customtkint
 3. Lancez l'application :
    ```bash
    python main.py
+   
+### Dépendances
+
+Ce projet nécessite les bibliothèques suivantes :
+
+- `pandas` : Utilisé pour la gestion des données dans des fichiers Excel (création, modification, lecture).
+- `openpyxl` : Requis par `pandas` pour manipuler les fichiers Excel au format `.xlsx`.
+- `customtkinter` : Bibliothèque utilisée pour créer l'interface graphique de l'application.
+- `tkinter` : Bibliothèque de base pour l'interface graphique de Python (installée par défaut).
+
+### Contributions
+
+Les contributions sont les bienvenues !
+
+Si vous souhaitez améliorer l'application ou ajouter des fonctionnalités, vous pouvez :
+
+1. Forker le projet.
+2. Créer une nouvelle branche (`git checkout -b feature/nouvelle-fonctionnalité`).
+3. Effectuer vos modifications.
+4. Soumettre une **pull request**.
+
+Avant de soumettre votre contribution, assurez-vous d'ajouter des tests pour les nouvelles fonctionnalités et de suivre les bonnes pratiques de codage.
+
+Si vous trouvez des bugs ou si vous avez des suggestions, n'hésitez pas à ouvrir une **issue**.
