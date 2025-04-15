@@ -1,11 +1,14 @@
 import pandas as pd
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Border, Side, Alignment, NamedStyle, numbers, PatternFill
 import os
+import datetime
 from utils.validation import email_valide, montant_valide, statut_valide, categorie_valide
+from openpyxl.utils import get_column_letter
 
 DOSSIER_DATA = "data"
 FICHIER_FACTURES = "factures.xlsx"
+FICHIER_HISTORIQUE = "historique.xlsx"
 FICHIER_DEPENSES = "depenses.xlsx"
 TAUX_TVA = 0.20
 
@@ -96,13 +99,15 @@ def ajouter_facture(facture):
         print(f"│ Feuille  : {nom_feuille}")
         print("└──────────────────────────────────────────\n")
 
+        # Ajout à l'historique
+        facture["Nom"] = facture["Client"]  # pour cohérence avec le champ "Nom" dans historique
+        facture["Type"] = "Facture"
+        ajouter_historique(facture, type_="Facture")
+
     except Exception as e:
         raise RuntimeError(f"Erreur lors de l'ajout de la facture : {e}")
 
 # Fonction pour ajouter une dépense
-# Constantes globales pour la gestion du format
-FORMAT_EURO_FR = '#,##0.00" €"'
-
 def ajouter_depense(depense):
     try:
         date_depense = pd.to_datetime(depense["Date"], format="%Y-%m-%d")
@@ -190,5 +195,102 @@ def ajouter_depense(depense):
         print(f"│ Feuille  : {nom_feuille}")
         print("└──────────────────────────────────────────\n")
 
+        # Ajout à l'historique
+        depense["Nom"] = depense["Nom"]  # déjà le bon champ
+        depense["Type"] = "Dépense"
+        ajouter_historique(depense, type_="Dépense")
+
     except Exception as e:
         raise RuntimeError(f"Erreur lors de l'ajout de la dépense : {e}")
+
+# Dictionnaire de traduction des mois de l'anglais vers le français
+mois_fr = {
+    "January": "Janvier",
+    "February": "Février",
+    "March": "Mars",
+    "April": "Avril",
+    "May": "Mai",
+    "June": "Juin",
+    "July": "Juillet",
+    "August": "Août",
+    "September": "Septembre",
+    "October": "Octobre",
+    "November": "Novembre",
+    "December": "Décembre"
+}
+
+def ajouter_historique(element, type_):
+    try:
+        chemin_fichier = os.path.join(DOSSIER_DATA, "historique.xlsx")
+
+        # Crée le fichier s'il n'existe pas
+        if not os.path.exists(chemin_fichier):
+            df_init = pd.DataFrame(columns=["ID", "DateAjout", "DateReel", "Heure", "Nom", "Type", "Montant (€)"])
+            df_init.to_excel(chemin_fichier, index=False)
+
+        # Nettoyage du montant (supprime € et espace)
+        montant_str = element["Montant TTC (€)"]
+        montant_float = float(montant_str.replace("€", "").replace(" ", "").strip())
+
+        # Inverser le montant si c'est une dépense
+        if type_ == "Dépense":
+            montant_float = -abs(montant_float)
+        else:
+            montant_float = abs(montant_float)
+
+        # Déterminer le mois et l'année à partir de DateAjout
+        date_ajout = datetime.datetime.strptime(element["Date"], "%Y-%m-%d")
+        mois_anglais = date_ajout.strftime("%B")  # Mois en anglais
+        mois = mois_fr[mois_anglais]  # Traduction en français
+        annee = date_ajout.year
+
+        # Créer un nom de feuille basé sur le mois et l'année
+        nom_feuille = f"{mois} {annee}"
+
+        # Charger le fichier Excel
+        wb = load_workbook(chemin_fichier)
+
+        # Créer la feuille si elle n'existe pas
+        if nom_feuille not in wb.sheetnames:
+            ws = wb.create_sheet(nom_feuille)
+            ws.append(["ID", "DateAjout", "DateReel", "Heure", "Nom", "Type", "Montant (€)"])  # Ajouter les en-têtes
+        else:
+            ws = wb[nom_feuille]
+
+        # Ajouter les nouvelles données à la feuille
+        nouvelle_ligne = [
+            element["ID"],
+            element["Date"],  # Date de la facture ou dépense
+            datetime.datetime.now().strftime("%Y-%m-%d"),
+            datetime.datetime.now().strftime("%H:%M:%S"),
+            element["Nom"],
+            type_,
+            montant_float
+        ]
+        ws.append(nouvelle_ligne)
+
+        # Appliquer le formatage sur la nouvelle ligne ajoutée
+        last_row = ws.max_row
+
+        # Centrer toutes les cellules de la ligne ajoutée
+        for cell in ws[last_row]:
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        # Mettre le montant en euros et en gras pour le montant TTC
+        montant_cell = ws.cell(row=last_row, column=7)  # Le montant est dans la 7ème colonne
+        
+        # Format personnalisé Euro, exemple : 1 000,00 € ou 1 000.00 €
+        montant_cell.number_format = '#,##0.00 €'  # Ajout du format personnalisé pour l'Euro
+        montant_cell.font = Font(bold=True)  # Gras pour le montant TTC
+
+        # Appliquer la couleur du texte en fonction du type (rouge pour Dépense, vert pour Facture)
+        if type_ == "Dépense":
+            montant_cell.font = Font(color="FF0000", bold=True)  # Rouge pour les dépenses
+        else:
+            montant_cell.font = Font(color="00FF00", bold=True)  # Vert pour les factures
+
+        # Sauvegarder les changements dans le fichier Excel
+        wb.save(chemin_fichier)
+
+    except Exception as e:
+        raise RuntimeError(f"Erreur lors de l'ajout à l'historique : {e}")

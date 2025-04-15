@@ -16,7 +16,7 @@ FLAG_FILE = os.path.join(DOSSIER_DATA, "first_use.flag")
 STRUCTURES = {
     "factures.xlsx": ["ID", "Date", "Client", "Description", "Type", "Statut", "Email", "Montant HT (€)", "Montant TTC (€)"],
     "depenses.xlsx": ["ID", "Date", "Nom", "Description", "Catégorie", "Email", "Montant HT (€)", "Montant TTC (€)"],
-    "historique.xlsx": ["ID", "Date", "Nom", "Description", "Type", "Email", "Montant HT (€)", "Montant TTC (€)"]
+    "historique.xlsx": ["ID", "DateAjout","DateReel","Heure", "Nom", "Type", "Montant (€)"]
 }
 
 # Taux de TVA (ex: 20%)
