@@ -1,5 +1,6 @@
 from utils.initialisation import initialiser_excel, reinitialiser_excel
 import os
+from utils.excel_manager import ajouter_facture
 
 def main():
     print("=== Initialisation des fichiers Excel ===")
@@ -13,6 +14,7 @@ def main():
             print("Entrée invalide. Veuillez entrer une année au format numérique.")
     else:
         print("L'initialisation a déjà été effectuée.\n")
+    
 
 if __name__ == "__main__":
     main()
