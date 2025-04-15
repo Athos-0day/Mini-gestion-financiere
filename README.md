@@ -130,5 +130,5 @@ L'interface graphique est en cours de développement avec le module `customtkint
    ```bash
    pip install pandas openpyxl customtkinter
 3. Lancez l'application :
-```bash
-    python main.py
+   ```bash
+   python main.py
