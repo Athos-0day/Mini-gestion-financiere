@@ -1,42 +1,20 @@
 import pandas as pd
 from openpyxl import load_workbook
-from openpyxl.styles import Font, Border, Side
-from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, Border, Side, Alignment, NamedStyle, numbers, PatternFill
 import os
-from utils.validation import email_valide, montant_valide, statut_valide
+from utils.validation import email_valide, montant_valide, statut_valide, categorie_valide
 
 DOSSIER_DATA = "data"
 FICHIER_FACTURES = "factures.xlsx"
+FICHIER_DEPENSES = "depenses.xlsx"
 TAUX_TVA = 0.20
 
 def ajouter_facture(facture):
-    """
-    Ajoute une nouvelle facture dans le fichier Excel correspondant au mois.
-
-    Paramètres :
-        facture : dict avec les clés suivantes :
-            - ID
-            - Date (au format JJ/MM/AAAA ou YYYY-MM-DD)
-            - Client
-            - Description
-            - Montant TTC (€) : montant toutes taxes comprises
-            - Type
-            - Statut (Envoyée, Payée, En attente, Annulée)
-            - Email
-
-    Comportement :
-        - Vérifie la validité de l'adresse e-mail, du montant TTC et du statut.
-        - Calcule automatiquement le Montant HT (€) à partir du Montant TTC et du taux de TVA.
-        - Ajoute ces informations dans la feuille Excel correspondant au mois et à l'année de la facture.
-        - Applique un format monétaire en euros (€) sur les colonnes Montant TTC et Montant HT.
-    """
-    # Vérification de la date
     try:
-        date_facture = pd.to_datetime(facture["Date"], dayfirst=True)
+        date_facture = pd.to_datetime(facture["Date"], format="%Y-%m-%d")
     except Exception:
         raise ValueError(f"Date invalide : {facture['Date']}")
 
-    # Vérification des champs
     if not email_valide(facture.get("Email")):
         raise ValueError(f"Adresse e-mail invalide : {facture.get('Email')}")
 
@@ -46,20 +24,20 @@ def ajouter_facture(facture):
     if not statut_valide(facture.get("Statut")):
         raise ValueError(f"Statut invalide : {facture.get('Statut')} (attendu : Envoyée, Payée, En attente, Annulée)")
 
-    # Calcul automatique du montant HT
     try:
-        montant_ttc = float(facture["Montant TTC (€)"])
-        montant_ht = round(montant_ttc / (1 + TAUX_TVA), 2)
-        facture["Montant HT (€)"] = montant_ht
+        montant_ttc_val = float(facture["Montant TTC (€)"])
+        montant_ht_val = round(montant_ttc_val / (1 + TAUX_TVA), 2)
+
+        facture["Montant TTC (€)"] = f"{montant_ttc_val:.2f} €"
+        facture["Montant HT (€)"] = f"{montant_ht_val:.2f} €"
     except Exception:
         raise ValueError(f"Erreur lors du calcul du montant HT à partir du montant TTC : {facture.get('Montant TTC (€)')}")
 
-    # Détermination de la feuille correspondant au mois et à l'année
     try:
-        date_facture = pd.to_datetime(facture["Date"], dayfirst=True)
-        mois_en = date_facture.strftime("%B")
+        mois = date_facture.month
         annee = date_facture.year
 
+        mois_en = date_facture.strftime("%B")
         mois_fr_dict = {
             "September": "Septembre", "October": "Octobre", "November": "Novembre",
             "December": "Décembre", "January": "Janvier", "February": "Février",
@@ -70,58 +48,147 @@ def ajouter_facture(facture):
         nom_feuille = f"{mois_fr} {annee}"
         chemin_fichier = os.path.join(DOSSIER_DATA, FICHIER_FACTURES)
 
-        # Charger le fichier Excel
         wb = load_workbook(chemin_fichier)
         if nom_feuille not in wb.sheetnames:
             raise ValueError(f"La feuille '{nom_feuille}' n'existe pas.")
-
-        # Lire les données existantes
-        df = pd.read_excel(chemin_fichier, sheet_name=nom_feuille)
-
-        # Ajouter la facture
-        df = pd.concat([df, pd.DataFrame([facture])], ignore_index=True)
-
-        # Sauvegarder la feuille modifiée
-        with pd.ExcelWriter(chemin_fichier, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
-            df.to_excel(writer, sheet_name=nom_feuille, index=False)
-
-        # Ouvrir à nouveau le fichier Excel pour ajouter les styles
-        wb = load_workbook(chemin_fichier)
+        
         ws = wb[nom_feuille]
 
-        # Appliquer un encadrement à la ligne ajoutée
-        ligne_index = len(df)
-        bordure = Border(left=Side(style="thin"), right=Side(style="thin"), top=Side(style="thin"), bottom=Side(style="thin"))
-        for col in range(1, len(df.columns) + 1):
-            cell = ws.cell(row=ligne_index, column=col)
-            cell.border = bordure
+        # Génération ID
+        lignes = list(ws.iter_rows(min_row=2, values_only=True))
+        prefix = f"F{annee}{mois:02d}"
+        existing_ids = [str(row[0]) for row in lignes if row[0] and str(row[0]).startswith(prefix)]
+        prochain_num = max([int(id_[7:]) for id_ in existing_ids], default=0) + 1
+        facture_id = f"{prefix}{prochain_num}"
+        facture["ID"] = facture_id
 
-        # Appliquer le format "euros" aux colonnes Montant TTC et Montant HT
-        cols_euro = ["Montant TTC (€)", "Montant HT (€)"]
-        headers = df.columns.tolist()
+        # Récupérer ordre des colonnes
+        colonnes = [cell.value for cell in ws[1]]
 
-        for col_name in cols_euro:
-            if col_name in headers:
-                col_index = headers.index(col_name) + 1
-                cell = ws.cell(row=ligne_index, column=col_index)
-                cell.number_format = '#,##0.00 €'
+        # Créer la ligne à ajouter
+        nouvelle_ligne = [facture.get(col, "") for col in colonnes]
+        next_row = ws.max_row + 1
+        ws.append(nouvelle_ligne)
 
-        # Appliquer le style gras à la cellule Montant TTC (€)
-        col_index_ttc = headers.index("Montant TTC (€)") + 1
-        ws.cell(row=ligne_index, column=col_index_ttc).font = Font(bold=True)
+        # === STYLE APPLIQUÉ À LA LIGNE ===
+        border = Border(left=Side(style='thin'), right=Side(style='thin'),
+                        top=Side(style='thin'), bottom=Side(style='thin'))
+        align = Alignment(horizontal="center", vertical="center")
+        bold = Font(bold=True)
 
-        # Sauvegarder les changements
+        for col_idx, value in enumerate(nouvelle_ligne, start=1):
+            cell = ws.cell(row=next_row, column=col_idx)
+            cell.alignment = align
+            cell.border = border
+
+            # Gras pour TTC uniquement
+            if colonnes[col_idx - 1] == "Montant TTC (€)":
+                cell.font = bold
+
         wb.save(chemin_fichier)
 
-        # Confirmation
         print("\nFacture ajoutée avec succès :")
         print("┌──────────────────────────────────────────")
         print(f"│ ID       : {facture['ID']}")
         print(f"│ Date     : {facture['Date']}")
         print(f"│ Client   : {facture['Client']}")
-        print(f"│ Montant  : {facture['Montant TTC (€)']} € TTC / {facture['Montant HT (€)']} € HT")
+        print(f"│ Montant  : {facture['Montant TTC (€)']} / {facture['Montant HT (€)']}")
         print(f"│ Feuille  : {nom_feuille}")
         print("└──────────────────────────────────────────\n")
 
     except Exception as e:
         raise RuntimeError(f"Erreur lors de l'ajout de la facture : {e}")
+
+# Fonction pour ajouter une dépense
+# Constantes globales pour la gestion du format
+FORMAT_EURO_FR = '#,##0.00" €"'
+
+def ajouter_depense(depense):
+    try:
+        date_depense = pd.to_datetime(depense["Date"], format="%Y-%m-%d")
+    except Exception:
+        raise ValueError(f"Date invalide : {depense['Date']}")
+
+    if not email_valide(depense.get("Email")):
+        raise ValueError(f"Adresse e-mail invalide : {depense.get('Email')}")
+
+    if not montant_valide(depense.get("Montant TTC (€)")):
+        raise ValueError(f"Montant TTC invalide : {depense.get('Montant TTC (€)')}")
+
+    if not categorie_valide(depense.get("Catégorie")):
+        raise ValueError(f"Catégorie invalide : {depense.get('Catégorie')}")
+
+    try:
+        montant_ttc_val = float(depense["Montant TTC (€)"])
+        montant_ht_val = round(montant_ttc_val / (1 + TAUX_TVA), 2)
+
+        depense["Montant TTC (€)"] = f"{montant_ttc_val:.2f} €"
+        depense["Montant HT (€)"] = f"{montant_ht_val:.2f} €"
+    except Exception:
+        raise ValueError(f"Erreur lors du calcul du montant HT à partir du montant TTC : {depense.get('Montant TTC (€)')}")
+
+    try:
+        mois = date_depense.month
+        annee = date_depense.year
+
+        mois_en = date_depense.strftime("%B")
+        mois_fr_dict = {
+            "September": "Septembre", "October": "Octobre", "November": "Novembre",
+            "December": "Décembre", "January": "Janvier", "February": "Février",
+            "March": "Mars", "April": "Avril", "May": "Mai", "June": "Juin", "July": "Juillet"
+        }
+
+        mois_fr = mois_fr_dict[mois_en]
+        nom_feuille = f"{mois_fr} {annee}"
+        chemin_fichier = os.path.join(DOSSIER_DATA, FICHIER_DEPENSES)
+
+        wb = load_workbook(chemin_fichier)
+        if nom_feuille not in wb.sheetnames:
+            raise ValueError(f"La feuille '{nom_feuille}' n'existe pas.")
+        
+        ws = wb[nom_feuille]
+
+        # Génération ID
+        lignes = list(ws.iter_rows(min_row=2, values_only=True))
+        prefix = f"D{annee}{mois:02d}"
+        existing_ids = [str(row[0]) for row in lignes if row[0] and str(row[0]).startswith(prefix)]
+        prochain_num = max([int(id_[7:]) for id_ in existing_ids], default=0) + 1
+        depense_id = f"{prefix}{prochain_num}"
+        depense["ID"] = depense_id
+
+        # Récupérer ordre des colonnes
+        colonnes = [cell.value for cell in ws[1]]
+
+        # Créer la ligne à ajouter
+        nouvelle_ligne = [depense.get(col, "") for col in colonnes]
+        next_row = ws.max_row + 1
+        ws.append(nouvelle_ligne)
+
+        # === STYLE APPLIQUÉ À LA LIGNE ===
+        border = Border(left=Side(style='thin'), right=Side(style='thin'),
+                        top=Side(style='thin'), bottom=Side(style='thin'))
+        align = Alignment(horizontal="center", vertical="center")
+        bold = Font(bold=True)
+
+        for col_idx, value in enumerate(nouvelle_ligne, start=1):
+            cell = ws.cell(row=next_row, column=col_idx)
+            cell.alignment = align
+            cell.border = border
+
+            # Gras pour TTC uniquement
+            if colonnes[col_idx - 1] == "Montant TTC (€)":
+                cell.font = bold
+
+        wb.save(chemin_fichier)
+
+        print("\nDépense ajoutée avec succès :")
+        print("┌──────────────────────────────────────────")
+        print(f"│ ID       : {depense['ID']}")
+        print(f"│ Date     : {depense['Date']}")
+        print(f"│ Fournisseur : {depense['Nom']}")
+        print(f"│ Montant  : {depense['Montant TTC (€)']} € TTC / {depense['Montant HT (€)']} € HT")
+        print(f"│ Feuille  : {nom_feuille}")
+        print("└──────────────────────────────────────────\n")
+
+    except Exception as e:
+        raise RuntimeError(f"Erreur lors de l'ajout de la dépense : {e}")

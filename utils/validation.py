@@ -28,3 +28,7 @@ def montant_valide(valeur):
 def statut_valide(statut: str) -> bool:
     statuts_autorises = {"Envoyée", "Payée", "En attente", "Annulée"}
     return statut in statuts_autorises
+
+def categorie_valide(categorie):
+    categories_valides = ["Fournitures", "Service", "Salaires", "Autre"]
+    return categorie in categories_valides
