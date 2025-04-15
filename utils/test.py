@@ -8,7 +8,7 @@ def test_facture_ajoute() :
                 "Date": "2025-09-15",
                 "Client": "Client A",
                 "Description": "Consultation",
-                "Montant (€)": 150,
+                "Montant TTC (€)": 240.0,
                 "Type": "Service",
                 "Statut": "Envoyée",
                 "Email": "clienta@example.com"
@@ -18,7 +18,7 @@ def test_facture_ajoute() :
                 "Date": "2026-05-16",
                 "Client": "Client B",
                 "Description": "Produit",
-                "Montant (€)": 30,  # Montant invalide
+                "Montant TTC (€)": 240.0, 
                 "Type": "Produit",
                 "Statut": "Payée",
                 "Email": "clientb@example.com"
@@ -28,7 +28,7 @@ def test_facture_ajoute() :
                 "Date": "2025-09-17",
                 "Client": "Client C",
                 "Description": "Service de maintenance",
-                "Montant (€)": 200,
+                "Montant TTC (€)": 240.0,
                 "Type": "Service",
                 "Statut": "En attente",  # Statut valide
                 "Email": "clientc@example"  # Email invalide
@@ -38,7 +38,7 @@ def test_facture_ajoute() :
                 "Date": "2025-09-18",
                 "Client": "Client D",
                 "Description": "Formation",
-                "Montant (€)": 250,
+                "Montant TTC (€)": 240.0,
                 "Type": "Service",
                 "Statut": "Non valide",  # Statut invalide
                 "Email": "clientd@example.com"
