@@ -2,6 +2,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Border, Side, Font, PatternFill
 from openpyxl.utils import get_column_letter
 import os
+import glob
 import shutil
 import pandas as pd
 from datetime import datetime
@@ -125,14 +126,22 @@ def initialiser_excel(annee=None):
     
     print("--- Initialisation terminée ---\n")
 
-# Fonction pour forcer l'initialisation (en cas de réinitialisation manuelle)
 def reinitialiser_excel(annee=None):
-    # Supprime le fichier flag pour forcer l'initialisation
+    # Supprimer tous les fichiers .xlsx dans le dossier data/
+    fichiers_excel = glob.glob(os.path.join(DOSSIER_DATA, "*.xlsx"))
+    for fichier in fichiers_excel:
+        try:
+            os.remove(fichier)
+            print(f"Supprimé : {fichier}")
+        except Exception as e:
+            print(f"Erreur lors de la suppression de {fichier} : {e}")
+
+    # Supprime le fichier flag s’il existe
     if os.path.exists(FLAG_FILE):
         os.remove(FLAG_FILE)
-        print("Réinitialisation forcée. Le fichier flag a été supprimé.\n")
-        initialiser_excel(annee)
-    else:
-        print("L'initialisation n'a pas encore eu lieu. Création des fichiers Excel.\n")
-        initialiser_excel(annee)
+        print("Fichier flag supprimé.")
+
+    # Lancer l'initialisation
+    print("Réinitialisation en cours...")
+    initialiser_excel(annee)
 
