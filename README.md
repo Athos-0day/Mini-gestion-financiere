@@ -1,158 +1,127 @@
-# Interface Financière pour Mini-Entreprises
+# Interface Financiere pour Mini-Entreprises
 
-Ce projet a pour objectif de proposer une interface simple et efficace pour le service financier des mini-entreprises (collège / lycée). Il vise à faciliter les tâches comptables, améliorer l'efficacité et réduire les risques d’erreurs.
+Ce projet a pour objectif de proposer une interface simple et efficace pour le service financier des mini-entreprises (college / lycee). Il vise a faciliter les taches comptables, ameliorer l'efficacite et reduire les risques d’erreurs.
 
 ## Objectifs
 
-- Aider les élèves en charge de la comptabilité à mieux structurer leur travail.
-- Permettre une vue d’ensemble claire et rapide de la situation financière.
-- Créer une base évolutive pour des fonctionnalités futures telles que l'export, l'archivage, l'envoi automatique par mail et le partage.
+- Aider les eleves en charge de la comptabilite a mieux structurer leur travail.
+- Permettre une vue d’ensemble claire et rapide de la situation financiere.
+- Creer une base evolutive pour des fonctionnalites futures telles que l'export, l'archivage, l'envoi automatique par mail et le partage.
 
 ## Utilisation
 
 ### Initialisation automatique des fichiers Excel
 
-Lors du premier lancement du programme, les fichiers Excel nécessaires à l’application sont créés automatiquement dans le dossier `data`. Cette étape d'initialisation ne se produit qu’une seule fois, sauf si elle est déclenchée manuellement (par suppression des fichiers ou réinitialisation).
+Lors du premier lancement du programme, les fichiers Excel necessaires a l’application sont crees automatiquement dans le dossier `data`. Cette etape d'initialisation ne se produit qu’une seule fois, sauf si elle est declenchee manuellement (par suppression des fichiers ou reinitialisation).
 
-Les fichiers suivants sont créés, avec des colonnes prédéfinies et une feuille pour chaque mois de l'année scolaire saisie lors de la première utilisation :
+Les fichiers suivants sont crees, avec des colonnes predefinies et une feuille pour chaque mois de l'annee scolaire saisie lors de la premiere utilisation :
 
 - `factures.xlsx`
 - `depenses.xlsx`
 - `historique.xlsx`
 
-Les fichiers sont organisés en feuilles mensuelles allant de septembre à juillet pour l'année scolaire.
+Les fichiers sont organises en feuilles mensuelles allant de septembre a juillet pour l'annee scolaire.
 
-Un fichier de contrôle (`first_use.flag`) est ensuite enregistré pour éviter une nouvelle initialisation inutile à chaque lancement.
+Un fichier de controle (`first_use.flag`) est ensuite enregistre pour eviter une nouvelle initialisation inutile a chaque lancement.
 
 ### Sauvegarde automatique
 
-Si une réinitialisation est déclenchée (avec confirmation explicite), les fichiers existants sont sauvegardés dans le dossier `data/sauvegardes/`, avec un horodatage dans le nom du fichier.
+Si une reinitialisation est declenchee (avec confirmation explicite), les fichiers existants sont sauvegardes dans le dossier `data/sauvegardes/`, avec un horodatage dans le nom du fichier.
 
-### Structure des données
+## Actions disponibles depuis l’interface graphique
+
+Grace a l'interface, vous pouvez :
+
+- **Ajouter** des factures et des depenses.
+- **Initialiser** les fichiers si ce n’est pas encore fait.
+- **Sauvegarder** les fichiers manuellement.
+- **Reinitialiser** les fichiers (avec sauvegarde automatique des versions precedentes).
+
+## Structure des donnees
 
 | Fichier           | Colonnes                                                                 |
 |-------------------|--------------------------------------------------------------------------|
-| factures.xlsx     | ID, Date, Client, Description, Type, Statut, Email, Montant HT (€), Montant TTC (€) |
-| depenses.xlsx     | ID, Date, Nom, Description, Catégorie, Email, Montant HT (€), Montant TTC (€) |
+| factures.xlsx     | ID, Date, Client, Description, Statut, Email, Montant HT (€), Montant TTC (€) |
+| depenses.xlsx     | ID, Date, Nom, Description, Categorie, Email, Montant HT (€), Montant TTC (€) |
 | historique.xlsx   | ID, Date, Nom, Description, Type, Email, Montant HT (€), Montant TTC (€)   |
 
-Chaque ligne d'un fichier représente une transaction. Une colonne **Email** est incluse dans chaque fichier, permettant de préparer de futures automatisations d'envoi de notifications ou de factures par courriel.
+Chaque ligne d'un fichier represente une transaction. Une colonne **Email** est incluse dans chaque fichier, permettant de preparer de futures automatisations d'envoi de notifications ou de factures par courriel.
 
 ### Formatage Excel
 
-Lors de l'ajout de nouvelles factures, les montants **TTC** sont mis en **gras** et la **ligne ajoutée** est encadrée sous forme de tableau. Les colonnes **Montant TTC (€)** et **Montant HT (€)** sont formatées en **euros (€)**.
+Lors de l'ajout de nouvelles factures, les montants **TTC** sont mis en **gras** et la **ligne ajoutee** est encadree sous forme de tableau. Les colonnes **Montant TTC (€)** et **Montant HT (€)** sont formatees en **euros (€)**.
 
-### Exemple d'un fichier Excel de factures
-
-| ID    | Date       | Client   | Description | Type  | Statut    | Email            | Montant HT (€) | Montant TTC (€) |
-|-------|------------|----------|-------------|-------|-----------|------------------|----------------|-----------------|
-| 001   | 12/04/2025 | Client A | Service X   | Vente | Payée     | clientA@mail.com | 100,00 €       | 120,00 €        |
-| 002   | 15/04/2025 | Client B | Service Y   | Vente | En attente| clientB@mail.com | 166,67 €       | 200,00 €        |
-
-## Fonctionnalités
+## Fonctionnalites
 
 ### Gestion des Factures
 
-- **Ajouter une facture** : Vous pouvez ajouter des factures avec un montant **TTC**, **Nom**, **Date** et **ID** unique. Le montant est nettoyé pour retirer le symbole euro et les espaces. 
-- **Validation de la catégorie** : Lorsqu'une facture est ajoutée, la catégorie est validée pour garantir que celle-ci existe dans les catégories pré-définies.
-- **Stockage dans un historique** : Les factures sont automatiquement ajoutées à un fichier `historique.xlsx` avec les informations suivantes :
-  - **ID**
-  - **Date d'ajout** (date de la facture)
-  - **Date réelle** (date actuelle)
-  - **Heure d'ajout**
-  - **Nom du client**
-  - **Type** (facture)
-  - **Montant en €** (formaté avec le symbole €)
-  
-- **Critères vérifiés lors de l'ajout d'une facture** :
-  - Vérification que le montant est un nombre valide.
-  - Vérification que la catégorie est valide et présente dans la liste des catégories existantes.
+- **Ajouter une facture** : Via l’interface, avec les champs Date, Client, Description, Statut, Email et Montant.
+- **Validation automatique** :
+  - Verification que le montant est un nombre valide.
+  - Affichage de messages d’erreur en cas de champ manquant ou invalide.
+- **Stockage dans un historique** :
+  - **Type** automatiquement defini comme "Facture".
+  - Montant positif et affiche avec un format euro.
 
-### Gestion des Dépenses
+### Gestion des Depenses
 
-- **Ajouter une dépense** : Vous pouvez ajouter des dépenses de la même manière que les factures, avec un montant **HT** et **TTC**, ainsi que des informations similaires (Nom, ID, etc.).
-- **Montant négatif** : Les dépenses sont automatiquement converties en montants négatifs dans l'historique.
-- **Validation de la catégorie** : La catégorie est validée de manière similaire à celle des factures.
-
-- **Critères vérifiés lors de l'ajout d'une dépense** :
-  - Vérification que le montant est un nombre valide.
-  - Vérification que la catégorie de dépense est valide.
-  - Conversion automatique du montant en une valeur négative.
+- **Ajouter une depense** : Via l’interface avec des champs similaires a ceux des factures (categorie incluse).
+- **Montant negatif** : Les depenses sont automatiquement enregistrees avec un montant negatif dans l’historique.
+- **Validation de la categorie** : Verifie que la categorie figure dans la liste predefinie.
 
 ### Historique
 
-- **Enregistrement de l'historique** : L'application garde une trace de toutes les factures et dépenses ajoutées dans un fichier Excel structuré.
-- **Structure de l'historique** :
-  - **ID** : Identifiant unique de la facture ou de la dépense.
-  - **DateAjout** : Date de la facture ou dépense.
-  - **DateReel** : Date actuelle de l'ajout.
-  - **Heure** : Heure de l'ajout.
-  - **Nom** : Nom du client ou fournisseur.
-  - **Type** : Type (facture ou dépense).
-  - **Montant (€)** : Montant en euros avec le signe €.
-
-- **Critères vérifiés pour l'historique** :
-  - Si le type est "Dépense", le montant est transformé en valeur négative.
-  - Si le type est "Facture", le montant reste positif.
+- **Suivi des transactions** : Toutes les operations sont enregistrees dans un fichier `historique.xlsx`.
+- **Structure** :
+  - ID, Date, Nom, Description, Type, Email, Montant HT (€), Montant TTC (€)
+  - **Type** est defini automatiquement comme "Facture" ou "Depense".
+  - Montants TTC affiches avec le signe €.
+- **Montants positifs ou negatifs** :
+  - Factures : montants positifs.
+  - Depenses : montants negatifs.
 
 ### Format et Style des Montants
 
-Les montants sont formatés avec le symbole de l'euro à la fin. Les montants des **dépenses** sont en **rouge** et les **factures** en **vert** pour mieux différencier les types de transactions.
+- Format : `100,00 €`
+- Style :
+  - **Factures** : montants en **vert**, **gras**.
+  - **Depenses** : montants en **rouge**, **gras**.
+  - Alignement uniforme dans le tableau Excel.
 
-- **Critères de style** :
-  - Les montants sont formatés pour avoir un seul espace entre le nombre et le symbole "€".
-  - Les montants des dépenses sont en rouge, et ceux des factures sont en vert.
-  - Tous les montants sont alignés et affichés en **gras**.
-
-## Développement en Cours
+## Developpement en Cours
 
 ### Interface Graphique avec CustomTkinter
 
-L'interface graphique est en cours de développement avec le module `customtkinter`, une extension améliorée de `tkinter`. Actuellement, nous avons structuré une interface avec une section de **menu** à gauche et des pages de contenu dynamiques à droite. 
+L'interface utilise le module `customtkinter`, avec une disposition claire :
 
-- **Menu à gauche** :
-  - **Factures & Dépenses** : Cette page permet d'ajouter et de visualiser les factures et les dépenses.
-  - **Statistiques** : La page des statistiques est en développement.
-  - **Aide** : La page d'aide propose des informations sur l'utilisation de l'application.
-
-- **Contenu Dynamique** :
-  - Lorsque l'utilisateur clique sur un bouton dans le menu, le contenu de la page de droite change en fonction de la section choisie.
-  
-- **En développement** :
-  - L'interface graphique utilise une disposition en **grid** pour organiser les éléments.
-  - L'apparence de l'application utilise un thème **clair** et une **palette de couleurs bleue**.
-  - Des animations de transition sont en cours de mise en place pour rendre l'interface plus fluide.
+- **Menu lateral** :
+  - Acces aux pages "Factures & Depenses", "Statistiques", "Aide"
+- **Page principale dynamique** :
+  - Changement de contenu selon la section choisie.
+- **Style clair et bleu**, avec design fluide (animations en developpement).
 
 ## Installation
 
-1. Clonez le dépôt ou téléchargez les fichiers sources.
-2. Installez les dépendances nécessaires :
+1. Clonez le depot ou telechargez les fichiers sources.
+2. Installez les dependances :
    ```bash
    pip install pandas openpyxl customtkinter
+   ```
 3. Lancez l'application :
    ```bash
    python main.py
-   
-### Dépendances
+   ```
 
-Ce projet nécessite les bibliothèques suivantes :
+## Dependances
 
-- `pandas` : Utilisé pour la gestion des données dans des fichiers Excel (création, modification, lecture).
-- `openpyxl` : Requis par `pandas` pour manipuler les fichiers Excel au format `.xlsx`.
-- `customtkinter` : Bibliothèque utilisée pour créer l'interface graphique de l'application.
-- `tkinter` : Bibliothèque de base pour l'interface graphique de Python (installée par défaut).
+- `pandas`
+- `openpyxl`
+- `customtkinter`
+- `tkinter` (installe par defaut avec Python)
 
-### Contributions
+## Contributions
 
-Les contributions sont les bienvenues !
+Les contributions sont les bienvenues !  
+Forkez le projet, creez une branche, developpez vos idees, puis ouvrez une pull request.  
+N’hesitez pas a ouvrir une issue pour suggerer une amelioration ou signaler un bug.
 
-Si vous souhaitez améliorer l'application ou ajouter des fonctionnalités, vous pouvez :
-
-1. Forker le projet.
-2. Créer une nouvelle branche (`git checkout -b feature/nouvelle-fonctionnalité`).
-3. Effectuer vos modifications.
-4. Soumettre une **pull request**.
-
-Avant de soumettre votre contribution, assurez-vous d'ajouter des tests pour les nouvelles fonctionnalités et de suivre les bonnes pratiques de codage.
-
-Si vous trouvez des bugs ou si vous avez des suggestions, n'hésitez pas à ouvrir une **issue**.
