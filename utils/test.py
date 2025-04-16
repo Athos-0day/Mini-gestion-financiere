@@ -8,7 +8,6 @@ def test_facture_ajoute():
             "Client": "Client A",
             "Description": "Consultation",
             "Montant TTC (€)": 240.0,
-            "Type": "Service",
             "Statut": "Envoyée",
             "Email": "clienta@example.com"
         },
@@ -18,7 +17,6 @@ def test_facture_ajoute():
             "Client": "Client A",
             "Description": "Consultation",
             "Montant TTC (€)": 240.0,
-            "Type": "Service",
             "Statut": "Envoyée",
             "Email": "clienta@example.com"
         },
@@ -27,7 +25,6 @@ def test_facture_ajoute():
             "Client": "Client B",
             "Description": "Produit",
             "Montant TTC (€)": 240.0,
-            "Type": "Produit",
             "Statut": "Payée",
             "Email": "clientb@example.com"
         },
@@ -36,7 +33,6 @@ def test_facture_ajoute():
             "Client": "Client C",
             "Description": "Service de maintenance",
             "Montant TTC (€)": 240.0,
-            "Type": "Service",
             "Statut": "En attente",  # Statut valide
             "Email": "clientc@example"  # Email invalide
         },
@@ -45,7 +41,6 @@ def test_facture_ajoute():
             "Client": "Client D",
             "Description": "Formation",
             "Montant TTC (€)": 240.0,
-            "Type": "Service",
             "Statut": "Non valide",  # Statut invalide
             "Email": "clientd@example.com"
         },

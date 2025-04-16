@@ -15,7 +15,7 @@ FLAG_FILE = os.path.join(DOSSIER_DATA, "first_use.flag")
 
 # Structure des fichiers et des colonnes
 STRUCTURES = {
-    "factures.xlsx": ["ID", "Date", "Client", "Description", "Type", "Statut", "Email", "Montant HT (€)", "Montant TTC (€)"],
+    "factures.xlsx": ["ID", "Date", "Client", "Description", "Statut", "Email", "Montant HT (€)", "Montant TTC (€)"],
     "depenses.xlsx": ["ID", "Date", "Nom", "Description", "Catégorie", "Email", "Montant HT (€)", "Montant TTC (€)"],
     "historique.xlsx": ["ID", "DateAjout","DateReel","Heure", "Nom", "Type", "Montant (€)"]
 }

@@ -253,7 +253,7 @@ def ajouter_historique(element, type_):
         # Créer la feuille si elle n'existe pas
         if nom_feuille not in wb.sheetnames:
             ws = wb.create_sheet(nom_feuille)
-            ws.append(["ID", "DateAjout", "DateReel", "Heure", "Nom", "Type", "Montant (€)"])  # Ajouter les en-têtes
+            ws.append(["ID", "DateAjout", "DateReel", "Heure", "Nom","Type", "Montant (€)"])  # Ajouter les en-têtes
         else:
             ws = wb[nom_feuille]
 
