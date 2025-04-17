@@ -117,4 +117,3 @@ class PageOptions:
                 text=f"Erreur lors de la réinitialisation : {e}",
                 text_color="red"
             )
-

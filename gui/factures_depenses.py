@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from utils.excel_manager import ajouter_facture, ajouter_depense
 from utils.validation import *
+from utils.config import FACTURE_STATUTS, DEPENSE_CATEGORIES
 
 class PageFactures:
     def __init__(self, parent, page_frame):
@@ -43,15 +44,16 @@ class PageFactures:
         self.entry_facture_client = ctk.CTkEntry(self.form_frame_facture, placeholder_text="Nom du client", width=400)
         self.entry_facture_description = ctk.CTkEntry(self.form_frame_facture, placeholder_text="Description", width=400)
         self.entry_facture_montant = ctk.CTkEntry(self.form_frame_facture, placeholder_text="Montant TTC (€)", width=400)
-        self.entry_facture_statut = ctk.CTkEntry(self.form_frame_facture, placeholder_text="Statut (ex: Payée, Envoyée)", width=400)
+        self.entry_facture_statut = ctk.CTkOptionMenu(self.form_frame_facture, values=FACTURE_STATUTS, width=400)
+        self.entry_facture_statut.set(FACTURE_STATUTS[0])  # Valeur par défaut
         self.entry_facture_email = ctk.CTkEntry(self.form_frame_facture, placeholder_text="Email du client", width=400)
 
-        for entry in [
+        for widget in [
             self.entry_facture_date, self.entry_facture_client, self.entry_facture_description,
-            self.entry_facture_montant, self.entry_facture_statut,
-            self.entry_facture_email
+            self.entry_facture_montant, self.entry_facture_email,
+            self.entry_facture_statut
         ]:
-            entry.pack(pady=5)
+            widget.pack(pady=5)
 
         submit = ctk.CTkButton(self.form_frame_facture, text="Ajouter la facture", command=self.submit_facture)
         submit.pack(pady=10)
@@ -70,12 +72,13 @@ class PageFactures:
         self.entry_depense_fournisseur = ctk.CTkEntry(self.form_frame_depense, placeholder_text="Nom du fournisseur", width=400)
         self.entry_depense_description = ctk.CTkEntry(self.form_frame_depense, placeholder_text="Description", width=400)
         self.entry_depense_montant = ctk.CTkEntry(self.form_frame_depense, placeholder_text="Montant TTC (€)", width=400)
-        self.entry_depense_categorie = ctk.CTkEntry(self.form_frame_depense, placeholder_text="Catégorie de la dépense", width=400)
+        self.entry_depense_categorie = ctk.CTkOptionMenu(self.form_frame_depense, values=DEPENSE_CATEGORIES, width=400)
+        self.entry_depense_categorie.set(DEPENSE_CATEGORIES[0])  # Valeur par défaut
         self.entry_depense_email = ctk.CTkEntry(self.form_frame_depense, placeholder_text="Email du client", width=400)
 
         for entry in [
             self.entry_depense_date, self.entry_depense_fournisseur, self.entry_depense_description,
-            self.entry_depense_montant, self.entry_depense_categorie, self.entry_depense_email
+            self.entry_depense_montant, self.entry_depense_email, self.entry_depense_categorie
         ]:
             entry.pack(pady=5)
 
